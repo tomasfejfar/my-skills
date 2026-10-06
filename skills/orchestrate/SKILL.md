@@ -13,50 +13,78 @@ say, keep the issue graph honest, and tell the user what needs their decision. Y
 
 1. Rename the session so agents can reach you: ask the user to run `/rename main-orchestrator` if it has
    no name yet. This name goes into every handoff prompt.
-2. **Pick the session backend** (how agents get a worktree and a visible terminal):
-   - **Okena (default):** if the `okena` skill is available, load it and use the Okena column below. Use the
-     binary in `$OKENA` if set, else `okena` on PATH.
-   - **No `okena` skill:** read `~/.claude/skills/orchestrate/references/other-multiplexers.md`, ask the
-     user which multiplexer or way of running sessions they want, map the backend operations for it, and
-     save the mapping as a memory so the next session does not ask again.
-3. **Pick the issue tracker** (where work comes from):
+2. **Pick the session backend** (how agents get a worktree and a visible terminal). Each backend has a
+   file in `~/.claude/skills/orchestrate/references/backends/`.
+   - **Okena (default):** if the `okena` skill is available, load it and read `backends/okena.md`.
+   - **Otherwise:** list the files in `backends/`, ask the user which one they want (plain text options,
+     one per file, plus "something else"), and read that file. For a backend with no file, map the
+     backend operations below with the user.
+3. **Pick the issue tracker** (where work comes from). Each tracker has a file in
+   `~/.claude/skills/orchestrate/references/trackers/`.
    - **GitHub Issues (default):** if the repo is on GitHub (`gh repo view --json nameWithOwner,hasIssuesEnabled`)
-     with issues enabled and the user has not named another tracker, use the GitHub column below.
-   - **Otherwise** (Linear, Jira, GitLab, ... or the user's tasks clearly live elsewhere): read
-     `~/.claude/skills/orchestrate/references/other-trackers.md`, confirm the tracker with the user, map
-     the tracker operations for it, and save the mapping as a memory.
+     with issues enabled and the user has not named another tracker, read `trackers/github.md`.
+   - **Otherwise** (the user named another tracker, or the tasks clearly live elsewhere): confirm the
+     tracker with the user and read its file from `trackers/`. For a tracker with no file, map the
+     tracker operations below with the user.
 4. Find the default branch and whether the repo has a ship skill (e.g. `.claude/skills/ship-issue`). Read
    the repo's AGENTS.md / CLAUDE.md for rules agents must follow (testing, secrets, worktree layout).
 5. Start the **unblock watch** (section 5).
 6. Save a short memory: "this session orchestrates <repo>; backend <X>; tracker <Y>", so a resumed
-   session knows its role.
+   session knows its role. If you mapped a backend or tracker that has no file, save the mapping too.
+
+The rest of this skill names operations in **bold** (**start**, **view**, ...). Run them with the
+commands from the chosen backend and tracker files.
 
 ### Backend operations
 
-| Operation | Okena |
+| Operation | Must do |
 |---|---|
-| **start** worktree + session, run `claude -n <name> <prompt>` | `~/.claude/skills/orchestrate/scripts/okena/start-agent.sh <project> <name> <prompt-file>` (prints the terminal id) |
-| **read** an agent's screen | `okena read <term>` |
-| **list** agents and worktrees | `okena ls`, `okena term ls <project>` |
-| **health** of agents | `~/.claude/skills/orchestrate/scripts/okena/agent-health.sh <term...>` |
-| **remove** a worktree (ends its session) | `okena worktree rm <worktree-project>` |
+| **start** | Create a git worktree from current main, open a terminal session named `<name>` in it, run `claude -n <name> "<prompt>"` there. |
+| **read** | Show the visible screen (or the last ~50 lines) of that session, so you can see activity and idleness. |
+| **list** | List live agent sessions and their worktrees. |
+| **health** | Per agent: busy/idle, the last action line, and `done <time>` / `N shells still running` markers. |
+| **remove** | End the session, then remove the worktree (and the branch if merged). |
 
-Messages go through SendMessage to the agent's session name, whatever the backend.
+- Keep the user able to watch and type into each agent. That is the reason for a terminal session
+  instead of subagents or headless runs.
+- Quote the prompt safely: write it to a file and pass `"$(cat <file>)"` or `$(printf %q "$prompt")`.
+  Never paste a multi-line prompt as raw keystrokes without quoting; newlines submit early.
+- Keep the per-agent identifier (terminal id, pane id, tab title) in your notes, so later **read** and
+  **remove** calls hit the right session.
+- Messages go through SendMessage to the agent's session name, whatever the backend.
 
 ### Tracker operations
 
-`<id>` is the tracker's issue key (`#533` on GitHub). PR/merge state always comes from the code host.
+`<id>` is the tracker's issue key (`#533` on GitHub, `ENG-123` on Linear).
 
-| Operation | GitHub |
+| Operation | Must do |
 |---|---|
-| **view** issue with comments | `gh issue view <n> --comments` |
-| **create** issue | `gh issue create --title … --body-file …` |
-| **comment** | `gh issue comment <n> --body …` |
-| **claim** | `gh issue edit <n> --add-assignee @me` |
-| **link** A blocked by B / remove | GraphQL `addBlockedBy` / `removeBlockedBy` (`issueId`, `blockingIssueId` = node ids from `gh issue view --json id`) |
-| **blockers** of an issue | GraphQL `issue(number:n){blockedBy(first:10){nodes{number state}}}` |
-| **watch** blocked → unblocked | `~/.claude/skills/orchestrate/scripts/watch-unblocked.sh <owner> <repo>` |
-| **PR state** (code host) | `gh pr view <n> --json state,mergedAt,mergeCommit` |
+| **view** | Title, description, state, assignee, comments of one issue. |
+| **create** | New issue with title + markdown body (context, goal, plan, done-when). |
+| **comment** | Add a comment (start notes, evidence, stale-finding notes). |
+| **claim** | Assign to the agent's user (or move to "In progress" if assignment is not used). |
+| **link** | "A is blocked by B" as a real relation, and remove it. Parent/sub-issue if supported. |
+| **blockers** | The open blockers of one issue. |
+| **watch** | Print `UNBLOCKED <id> <title>` when the last open blocker of an issue closes. |
+| **PR state** | State and merge commit of a PR/MR. Always from the code host, even when issues live elsewhere. |
+
+- Prefer the official CLI; else an MCP server the session already has; else the REST/GraphQL API with a
+  token from the environment (never print or log it).
+- Agents need the same operations. Put the exact commands in every handoff prompt (claim, comment,
+  create), or the agent will improvise.
+- Keep the issue key in worktree and session names (`ENG-123-slug`), and say the key + title to the user.
+- No blocked-by relation in the tracker → say so to the user. Use the closest thing (a "blocks" link
+  type, a label plus a line in the description) and make **watch** read that.
+- No ready **watch** script for the tracker → write a small `scripts/<tracker>/watch-unblocked.sh`
+  modelled on `scripts/github/watch-unblocked.sh`: poll every ~2 min, snapshot
+  `id<TAB>open-blocker-count<TAB>title` for issues with any blocker, and print `UNBLOCKED <id> <title>`
+  when the count goes from >0 to 0.
+
+### Adding a service
+
+New backend or tracker → add `references/backends/<name>.md` or `references/trackers/<name>.md` with:
+a title, what it needs (install, config), a table with a row for **every** operation above, and gotchas.
+Put helper scripts in `scripts/<name>/`. No change to this file is needed.
 
 ## 1. Hard rules
 
