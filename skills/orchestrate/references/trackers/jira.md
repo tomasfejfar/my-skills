@@ -12,6 +12,7 @@ an API token.
 | **link** | `jira issue link KEY-A KEY-B Blocks` (B blocks A; check the link name in the site's link types); remove via `DELETE /issueLink/<id>` |
 | **blockers** | `issuelinks` where type is "Blocks" and `inwardIssue` exists; open = `statusCategory != done` |
 | **watch** | JQL `issue in linkedIssues(KEY, "is blocked by")` per watched issue, or poll `issuelinks` of `issueLinkType = Blocks` issues |
+| **done-watch** | Poll `GET /issue/KEY-1?fields=status` for the given issues; closed = `statusCategory == done` |
 | **PR state** | From the code host (e.g. `trackers/github.md`) |
 
 Jira descriptions use ADF in REST v3; jira-cli converts markdown. Say "markdown may render differently"

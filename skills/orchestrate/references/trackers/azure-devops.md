@@ -11,4 +11,5 @@ CLI: `az boards` (extension `azure-devops`).
 | **link** | `az boards work-item relation add --id <A> --relation-type Predecessor --target-id <B>` (B must finish first) |
 | **blockers** | Relations of type `System.LinkTypes.Dependency-Reverse` whose target is not Closed/Done |
 | **watch** | Poll **blockers** |
+| **done-watch** | Poll `az boards work-item show --id <n>` (`System.State` Closed/Done) and `az repos pr show --id <n>` (`status` completed/abandoned) |
 | **PR state** | `az repos pr show --id <n>` |

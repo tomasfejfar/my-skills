@@ -6,6 +6,7 @@ outside kitty).
 | Operation | How |
 |---|---|
 | **start** | `dir=../wt/<name>; git worktree add "$dir" -b <name> origin/main`<br>`kitty @ launch --type=tab --tab-title <name> --cwd "$dir"`<br>`kitty @ send-text --match title:<name> "claude -n <name> $(printf %q "$(cat prompt.txt)")"$'\r'` |
+| **add session** | `kitty @ launch --type=tab --tab-title <name> --cwd "$dir"`, then `send-text` as in **start** |
 | **read** | `kitty @ get-text --match title:<name> \| tail -60` |
 | **list** | `kitty @ ls` |
 | **health** | **read** + grep for the markers |

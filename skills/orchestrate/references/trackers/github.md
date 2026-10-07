@@ -11,4 +11,5 @@ Default tracker. CLI: `gh`.
 | **link** | GraphQL `addBlockedBy` / `removeBlockedBy` (`issueId`, `blockingIssueId` = node ids from `gh issue view --json id`) |
 | **blockers** | GraphQL `issue(number:n){blockedBy(first:10){nodes{number state}}}` |
 | **watch** | `~/.claude/skills/orchestrate/scripts/github/watch-unblocked.sh <owner> <repo>` |
+| **done-watch** | `~/.claude/skills/orchestrate/scripts/github/watch-closed.sh <owner> <repo> <n...>` (issue and PR numbers mixed) |
 | **PR state** | `gh pr view <n> --json state,mergedAt,mergeCommit` |

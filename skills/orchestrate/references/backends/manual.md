@@ -5,6 +5,7 @@ No multiplexer: you create the worktree and the user starts the session.
 | Operation | How |
 |---|---|
 | **start** | `dir=../wt/<name>; git worktree add "$dir" -b <name> origin/main`, then print one line for the user: `cd <dir> && claude -n <name> "$(cat <prompt-file>)"` |
+| **add session** | Print one line for the user to run in a new terminal: `cd <dir> && claude -n <name> "$(cat <prompt-file>)"` |
 | **read** | Not available. Use the agent's SendMessage reports. |
 | **list** | `ListAgents` + `git worktree list` |
 | **health** | `ListAgents` (busy/idle) + process checks in the worktree (`ps -eo pid,etime,args \| grep <dir>`) |

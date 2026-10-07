@@ -12,4 +12,5 @@ CLI: `linear` (e.g. `linear-cli`), or the Linear MCP server (`save_issue`, `get_
 | **link** | GraphQL `issueRelationCreate(input:{issueId:B, relatedIssueId:A, type: blocks})` (B blocks A); delete with `issueRelationDelete` |
 | **blockers** | GraphQL `issue(id){inverseRelations{nodes{type issue{identifier state{type}}}}}`; open = state type not `completed`/`canceled` |
 | **watch** | Poll **blockers** for issues of the team that have any `blocks` inverse relation |
+| **done-watch** | Poll `issue(id){state{type}}` for the given issues; needs `LINEAR_API_KEY` in the shell (the MCP server cannot be polled from a script). Without a key, run **done-watch** on the PRs in the code host only. |
 | **PR state** | From the code host (e.g. `trackers/github.md`) |

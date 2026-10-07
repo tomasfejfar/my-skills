@@ -14,4 +14,5 @@ agent edits only its own section; you are the only one who adds sections and lin
 | **link** | Edit the `blocked-by:` line |
 | **blockers** | IDs on the `blocked-by:` line whose state is not `done` |
 | **watch** | Not available. Re-check blockers whenever an agent reports done. |
+| **done-watch** | Not available for issues. Run **done-watch** on the PRs in the code host. |
 | **PR state** | From the code host (e.g. `trackers/github.md`) |
