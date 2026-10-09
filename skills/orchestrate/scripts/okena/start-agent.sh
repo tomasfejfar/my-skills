@@ -13,15 +13,24 @@ prompt_file="$3"
 
 [ -s "$prompt_file" ] || { echo "prompt file empty or missing: $prompt_file" >&2; exit 1; }
 
+# The worktree copies the parent project's layout, so it gets as many terminals as the parent has.
+# They appear after `worktree add` returns: wait for all of them, keep the first, close the rest.
+expected=$("$OKENA" term ls "$project" | wc -l)
+[ "$expected" -gt 0 ] || { echo "project $project has no terminals" >&2; exit 1; }
+
 "$OKENA" worktree add "$project" "$name" --new-branch >&2
 
-term=""
+terms=""
 for _ in $(seq 1 30); do
-  term=$("$OKENA" term ls "$name" 2>/dev/null | head -1 | cut -f1)
-  [ -n "$term" ] && break
+  terms=$("$OKENA" term ls "$name" 2>/dev/null | cut -f1)
+  [ -n "$terms" ] && [ "$(wc -l <<<"$terms")" -ge "$expected" ] && break
   sleep 2
 done
-[ -n "$term" ] || { echo "no terminal appeared for worktree $name" >&2; exit 1; }
+[ -n "$terms" ] && [ "$(wc -l <<<"$terms")" -ge "$expected" ] \
+  || { echo "worktree $name has $(grep -c . <<<"$terms") of $expected terminals after 60 s" >&2; exit 1; }
+
+term=$(head -1 <<<"$terms")
+tail -n +2 <<<"$terms" | while read -r extra; do "$OKENA" term close "$extra"; done
 
 prompt=$(cat "$prompt_file")
 "$OKENA" run "$term" "claude -n $(printf %q "$name") $(printf %q "$prompt")"

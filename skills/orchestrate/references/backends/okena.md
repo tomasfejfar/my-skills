@@ -13,7 +13,9 @@ Default backend. Load the `okena` skill first. `okena` below means the binary in
 | **remove** | `okena worktree rm <worktree-project>` (ends its sessions) |
 
 - Okena creates the worktree itself (`okena worktree add <project> <name> --new-branch`), branched from
-  current main of the project.
+  current main of the project. The worktree copies the parent project's layout (all its tabs);
+  `start-agent.sh` waits for all of them, keeps the first and closes the rest. Okena has no option for a
+  single-terminal worktree.
 - **health** finds the Claude process by its working directory (`/proc/<pid>/cwd` = worktree path), so
   `claude=none` / `exited` means the session ended, even if the screen still shows old output. `busy`
   comes from the screen (spinner, `esc to interrupt`); also look at `cpu` and `shells`.
