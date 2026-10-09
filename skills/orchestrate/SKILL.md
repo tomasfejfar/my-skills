@@ -12,13 +12,14 @@ say, keep the issue graph honest, and tell the user what needs their decision. Y
 ## 0. Setup (once per session)
 
 1. **Claim the orchestrator name.** Agents reach you by session name, so it must be unique per repo:
-   `main-orchestrator-<repo>`, where `<repo>` is the repo name from the `origin` remote
-   (`basename -s .git "$(git remote get-url origin)"`), or the main worktree's directory name if there is
-   no `origin`. Then run ListAgents:
+   `orchestrator-<repo>-<owner>` from the `origin` remote (the owner only tells apart same-named repos,
+   so it goes last):
+   `url=$(git remote get-url origin); echo "orchestrator-$(basename -s .git "$url")-$(basename "$(dirname "${url/://}")")"`.
+   No `origin` → `orchestrator-<main worktree directory name>`. Then run ListAgents:
    - A session with this name exists and it is not this session → **stop**. Tell the user that repo
      already has an orchestrator (its name and kind from the listing) and do nothing else. One repo has
      one orchestrator.
-   - Otherwise, if this session is not named that yet, ask the user to run `/rename main-orchestrator-<repo>`
+   - Otherwise, if this session is not named that yet, ask the user to run `/rename <that name>`
      and wait until they confirm.
    This name goes into every handoff prompt as `<orchestrator-name>`.
 2. **Pick the session backend** (how agents get a worktree and a visible terminal). Each backend has a
@@ -101,7 +102,9 @@ Put helper scripts in `scripts/<name>/`. No change to this file is needed.
 
 - **You never do the work.** Every piece of work (code, analysis, fixes, research) runs as a visible
   Claude session in its own worktree. The worktree is named after the issue (`<id>-<slug>`); its
-  sessions are `<id>-<slug>` (implementation) and `analysis-<id>-<slug>` (analysis, planning).
+  sessions are `<id>-<slug>` (implementation) and `analysis-<id>-<slug>` (analysis, planning). A session
+  that has no issue id (e.g. reviewing someone's PR) gets the repo in its name instead
+  (`<repo>-review-<pr>`), because a generic name like `review-1` collides with other repos' agents.
 - **You never go into a worktree.** No `cd` into it, no edits, no builds or tests there; your shell stays
   in the main checkout. To look at something in a worktree (what an agent wrote, why a check fails),
   start a read-only subagent (Explore) with the absolute path. Subagents only look, never change anything.
