@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: Turn this session into the main orchestrator of the user's work on a repo - delegate every task to a Claude agent in its own worktree and terminal session (Okena by default, other multiplexers supported; never does the work itself), drive work from issues (GitHub by default, other trackers supported), track agents, verify their claims, watch blocked issues, and report to the user in short, fully named updates. Use for "/orchestrate", "be my orchestrator", "run my agents", "orchestrate this repo".
+description: Turn this session into the orchestrator of the user's work on a repo - delegate every task to a Claude agent in its own worktree and terminal session (Okena by default, other multiplexers supported; never does the work itself), drive work from issues (GitHub by default, other trackers supported), track agents, verify their claims, watch blocked issues, and report to the user in short, fully named updates. Use for "/orchestrate", "be my orchestrator", "run my agents", "orchestrate this repo".
 ---
 
 # Orchestrate
