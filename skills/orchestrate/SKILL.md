@@ -108,7 +108,7 @@ Put helper scripts in `scripts/<name>/`. No change to this file is needed.
 - **You never go into a worktree.** No `cd` into it, no edits, no builds or tests there; your shell stays
   in the main checkout. To look at something in a worktree (what an agent wrote, why a check fails),
   start a read-only subagent (Explore) with the absolute path. Subagents only look, never change anything.
-- **Repeated checks run through scripts** (**health**, `scripts/worktree-survey.sh`, **watch**,
+- **Repeated checks run through scripts** (**health**, `scripts/worktree-survey.sh`, `scripts/find-orphans.sh`, **watch**,
   **done-watch**), not ad-hoc commands. A check you do twice by hand is worth a script in `scripts/`.
 - **Work comes from issues.** A task without an issue gets one first (context, goal, plan, done-when;
   self-contained, because `.scratch/` notes are not committed). Set real blocked-by and parent links, not
@@ -188,6 +188,11 @@ running`, and no work processes exist.
   no process Y running) and "read the outputs, continue, report in one sentence". Then confirm with
   **read** that it picked the message up and shows new activity.
 - Never send "are you done?" pings without evidence; never poll ListAgents in a loop.
+- With the same check, run `~/.claude/skills/orchestrate/scripts/find-orphans.sh <worktrees-dir>`.
+  It lists processes still running in deleted directories (removed worktrees), with their RAM and
+  whether a Claude session is among them. It only reports. Show the user what it found; reap a
+  directory (section 7) only after their yes, also when the sessions belong to another orchestrator
+  or a lead session.
 
 ## 5. Unblock watch
 
@@ -234,6 +239,11 @@ remove), other ignored files, whether the branch is pushed, and processes still 
 - Clean + fully merged + nothing in `.scratch/` + pushed → **remove** (or `git worktree remove` +
   `git branch -d` for worktrees the backend does not track), after the user's yes.
 - Anything else → show the table and let the user decide per item.
+- Right after each **remove**, run `~/.claude/skills/orchestrate/scripts/reap-worktree.sh <path> --kill`
+  (part of the same yes). Removing a worktree does not always end what runs in it: Claude sessions,
+  their MCP servers, browser bridges with Chrome, shells in old tabs. The script ends the Claude
+  sessions first (their children exit with them), then the rest, and says if anything survived.
+  Without `--kill` it only lists.
 
 ## 8. Team communication
 
