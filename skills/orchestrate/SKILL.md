@@ -199,10 +199,16 @@ propose who/what picks it up. If the user may be away and it matters now, send a
 
 ## 5a. Done watch (clean up without being asked)
 
-Keep a **done-watch** over every issue and PR your agents own, the same way as the unblock watch
-(background Bash, exits on the first event). Re-start it with the new list whenever an agent starts or
-opens a PR. On `MERGED`/`CLOSED`, run section 7 for that worktree right away: ask the agent for
-follow-ups and to archive its research, run the survey, and propose the removal to the user in one line.
+Keep a **done-watch** over the issues and PRs of the sessions **you started**, the same way as the
+unblock watch (background Bash, exits on the first event):
+- When you start a session, add its issue; when it opens its PR, add the PR. Re-start the watch with
+  the new list each time.
+- When the session's work is closed (section 7), drop its issue and PR from the list.
+- Do not add issues or PRs that your sessions create or report on their own (e.g. a lead session that
+  opens many slice PRs). That session watches them; you rely on what it tells you.
+
+On `MERGED`/`CLOSED`, run section 7 for that worktree right away: ask the agent for follow-ups and to
+archive its research, run the survey, and propose the removal to the user in one line.
 
 ## 6. Status answers
 
