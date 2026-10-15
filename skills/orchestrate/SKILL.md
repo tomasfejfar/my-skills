@@ -65,7 +65,7 @@ commands from the chosen backend and tracker files.
 
 ### Tracker operations
 
-`<id>` is the tracker's issue key (`#533` on GitHub, `ENG-123` on Linear).
+`<id>` is the tracker's issue key (`#123` on GitHub, `ENG-123` on Linear).
 
 | Operation | Must do |
 |---|---|
@@ -115,7 +115,7 @@ Put helper scripts in `scripts/<name>/`. No change to this file is needed.
   only text.
 - **File findings as issues**, yours and the agents'. Tell agents to do the same.
 - **Name every issue and PR in full** to the user: a short plain title next to the id, never a bare
-  `#533`. Ask agents to do the same in their reports.
+  `#123`. Ask agents to do the same in their reports.
 - **Agents' claims about anything outside their own work may be stale** (blockers, other issues'
   state, owners, "merged", "measured on main"). Check in the tracker and code host (state, **blockers**,
   merge commit, whether the commit they tested includes the relevant fix) before you relay or act on
