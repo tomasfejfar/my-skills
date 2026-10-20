@@ -5,6 +5,10 @@ a lead, and so is any session it starts that starts sessions of its own (e.g. an
 session that starts one session per slice of the plan). A lead that is not the orchestrator reads only
 this file, not the rest of the skill.
 
+**Scope:** these rules cover Claude *sessions* only (started in a terminal, a multiplexer such as
+Okena, or a worktree with `claude`). They do not cover subagents started with the Agent tool, also not
+with `isolation: "worktree"`. For subagents, the Claude Code harness guidance applies unchanged.
+
 ## Who owns what
 
 - The session that starts another session is its lead. The lead is responsible for that session and
