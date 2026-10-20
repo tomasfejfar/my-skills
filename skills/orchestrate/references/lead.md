@@ -22,6 +22,9 @@ with `isolation: "worktree"`. For subagents, the Claude Code harness guidance ap
 
 - Keep track of every session you started: its worktree, its state, and the sessions it started in
   turn (as far as you know).
+- Keep the overview, do not relay. Messages from your sessions update your state file; most need no
+  reply. Never pass on a question a session asks the user: tell the session to ask the user directly
+  in its own terminal, naming itself by session name + issue id + title.
 - Check regularly that finished sessions are no longer running and that their worktrees are removed.
 - **Sub-sessions never remove their own worktree**, even when a repo skill tells them to after a merge.
   This rule wins over repo skills. Put it in every handoff prompt: "When you are done, report to

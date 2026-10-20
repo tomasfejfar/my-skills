@@ -134,9 +134,12 @@ Put helper scripts in `scripts/<name>/`. No change to this file is needed.
   deploys, real payments.
 - Present decisions as numbered options with consequences in plain text. Do not use a question-picker
   tool for analysis questions.
-- **Short updates.** Reply to an agent's message in 1–3 lines. Do not repeat what the user did in the
-  agent's own session. Do not list all open decisions again after every update; only when asked
-  (section 6).
+- **Keep the overview; do not relay.** The user talks to each session directly in its own terminal.
+  Do not retell what sessions do, and never pass on a question a session asks the user (section 3).
+  When you do write to the user, 1–3 lines. Do not list all open decisions again after every update;
+  only when asked (section 6).
+- **Name sessions so they can be found on a phone**: session name + issue id + title, e.g.
+  "`123-login-fix` (#123 Fix login redirect)". Never "the agent" or "it".
 
 ## 2. Starting an agent
 
@@ -172,7 +175,10 @@ Every handoff prompt contains:
 8. "Do not wait on background commands that never end (servers); check processes and outputs yourself."
 9. "Report to `<orchestrator-name>` in ONE short sentence (SendMessage) at milestones: plan agreed /
    PR opened / merged / blocked / done, and list every issue you created."
-10. "When you are done, report to `<orchestrator-name>` and never remove your worktree or branch, even
+10. "Ask the user your questions directly in this session; do not send them to `<orchestrator-name>`.
+    Name yourself by session name + issue id + title when you ask, because the user may answer from a
+    phone and not know which session this is."
+11. "When you are done, report to `<orchestrator-name>` and never remove your worktree or branch, even
     if a repo skill says so after a merge. If you start sessions yourself, you are their lead: follow
     `~/.claude/skills/orchestrate/references/lead.md`."
 
@@ -180,13 +186,23 @@ After **start** or **add session**, add the session to `.scratch/lead-state.md`.
 
 ## 3. Handling agent messages
 
+Agent messages keep your overview up to date. Most need no reply and no word to the user.
+
 For each incoming message:
-1. Verify the cross-references (**PR state**, **view**, **blockers**). For "X fails on main", check
-   that the tested commit includes the latest fix (`git merge-base --is-ancestor <fix> <tested>`); if
-   not, say so and **comment** on the issue.
-2. Tell the user in 1–3 lines: what changed, evidence, what it unblocks, the next decision.
-3. When an issue it depends on closes, propose the next agent; when an agent reports "plan agreed",
-   ask the user whether to start shipping.
+1. Update `.scratch/lead-state.md` (state, PR, issues it created).
+2. A plain status report (started, PR opened, progress) → no reply, nothing to the user.
+3. A question for the user → do not pass it on and do not ask it again. Reply to the session in one
+   line: "Ask the user directly in your own session." The user answers there.
+4. Tell the user (1–3 lines, session named in full) only what needs **your** level, i.e. something no
+   single session can see or decide:
+   - an issue closed and unblocks other work → propose the next agent;
+   - an analysis session reports "plan agreed" → ask whether to start shipping (section 2);
+   - work is done → the cleanup proposal (section 7);
+   - two sessions conflict (same files, same issue, opposite claims);
+   - a session is stuck or blocked by something outside its own work.
+5. Before you act on a claim about other work, verify it (**PR state**, **view**, **blockers**). For
+   "X fails on main", check that the tested commit includes the latest fix
+   (`git merge-base --is-ancestor <fix> <tested>`); if not, tell the session and **comment** on the issue.
 
 ## 4. Watching agents (they get stuck silently)
 
