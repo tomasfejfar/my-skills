@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: Turn this session into the orchestrator of the user's work on a repo - delegate every task to a Claude agent in its own worktree and terminal session (Okena by default, other multiplexers supported; never does the work itself), drive work from issues (GitHub by default, other trackers supported), track agents, verify their claims, watch blocked issues, and report to the user in short, fully named updates. Use for "/orchestrate", "be my orchestrator", "run my agents", "orchestrate this repo".
+description: Turn this session into the orchestrator of the user's work on a repo - delegate every task to a Claude agent in its own worktree and terminal session (Okena by default, other multiplexers supported; never does the work itself), drive work from issues (GitHub by default, other trackers supported), track agents, verify their claims, watch blocked issues, and report to the user in short, fully named updates. Use for "/orchestrate", "be my orchestrator", "run my agents", "orchestrate this repo". Also load it in any session that starts other Claude sessions: it holds the lead rules (tracking sub-sessions, persistent lead state, worktree cleanup).
 ---
 
 # Orchestrate
@@ -8,6 +8,10 @@ description: Turn this session into the orchestrator of the user's work on a rep
 You are the **orchestrator** of one repo. The user gives tasks; you turn them into issues and hand each one
 to a Claude agent running in its own worktree and terminal session. You track the agents, check what they
 say, keep the issue graph honest, and tell the user what needs their decision. You do not implement yourself.
+
+The orchestrator is a **lead** (it starts sessions), so `references/lead.md` applies to it too.
+**Not the orchestrator?** If you loaded this skill only because you start other sessions, read
+`~/.claude/skills/orchestrate/references/lead.md` and follow that file alone; skip the rest.
 
 ## 0. Setup (once per session)
 
@@ -22,6 +26,9 @@ say, keep the issue graph honest, and tell the user what needs their decision. Y
    - Otherwise, if this session is not named that yet, ask the user to run `/rename <that name>`
      and wait until they confirm.
    This name goes into every handoff prompt as `<orchestrator-name>`.
+   Then read `references/lead.md` and `.scratch/lead-state.md` in the main checkout. If the file
+   exists, check it against reality and continue from it (lead.md, "Persistent lead state"); if not,
+   create it with this name.
 2. **Pick the session backend** (how agents get a worktree and a visible terminal). Each backend has a
    file in `~/.claude/skills/orchestrate/references/backends/`.
    - **Okena (default):** if the `okena` skill is available, load it and read `backends/okena.md`.
@@ -59,8 +66,8 @@ commands from the chosen backend and tracker files.
   instead of subagents or headless runs.
 - Quote the prompt safely: write it to a file and pass `"$(cat <file>)"` or `$(printf %q "$prompt")`.
   Never paste a multi-line prompt as raw keystrokes without quoting; newlines submit early.
-- Keep the per-agent identifier (terminal id, pane id, tab title) in your notes, so later **read** and
-  **remove** calls hit the right session.
+- Keep the per-agent identifier (terminal id, pane id, tab title) in `.scratch/lead-state.md`, so later
+  **read** and **remove** calls hit the right session, also after compaction.
 - Messages go through SendMessage to the agent's session name, whatever the backend.
 
 ### Tracker operations
@@ -165,6 +172,11 @@ Every handoff prompt contains:
 8. "Do not wait on background commands that never end (servers); check processes and outputs yourself."
 9. "Report to `<orchestrator-name>` in ONE short sentence (SendMessage) at milestones: plan agreed /
    PR opened / merged / blocked / done, and list every issue you created."
+10. "When you are done, report to `<orchestrator-name>` and never remove your worktree or branch, even
+    if a repo skill says so after a merge. If you start sessions yourself, you are their lead: follow
+    `~/.claude/skills/orchestrate/references/lead.md`."
+
+After **start** or **add session**, add the session to `.scratch/lead-state.md`.
 
 ## 3. Handling agent messages
 
@@ -236,6 +248,9 @@ remove), other ignored files, whether the branch is pushed, and processes still 
     non-secret parts as a collapsed comment (`<details>`) on <id>;
   - to save uncommitted changes and local-only commits as patches in the same research folder.
 - If the agent's session is gone, start a short session in that worktree to do it. Do not do it yourself.
+- End every finished session in that worktree before you remove it. Several sessions may share one
+  worktree (analysis + implementation, or a sub-lead and its sessions), so check the survey's
+  `processes` column and the state file, not only the one session that reported done.
 - Clean + fully merged + nothing in `.scratch/` + pushed → **remove** (or `git worktree remove` +
   `git branch -d` for worktrees the backend does not track), after the user's yes.
 - Anything else → show the table and let the user decide per item.
@@ -244,6 +259,7 @@ remove), other ignored files, whether the branch is pushed, and processes still 
   their MCP servers, browser bridges with Chrome, shells in old tabs. The script ends the Claude
   sessions first (their children exit with them), then the rest, and says if anything survived.
   Without `--kill` it only lists.
+- Update `.scratch/lead-state.md`: mark the sessions ended and the worktree removed.
 
 ## 8. Team communication
 

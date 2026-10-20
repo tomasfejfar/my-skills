@@ -6,7 +6,7 @@ Personal [Claude Code](https://claude.com/claude-code) skills.
 
 | Skill | What it does |
 |---|---|
-| [orchestrate](skills/orchestrate/SKILL.md) | Turns a session into an orchestrator: every task becomes an issue and runs as a Claude agent in its own worktree and terminal session. Tracks agents, verifies their claims, watches blocked issues. |
+| [orchestrate](skills/orchestrate/SKILL.md) | Turns a session into an orchestrator: every task becomes an issue and runs as a Claude agent in its own worktree and terminal session. Tracks agents, verifies their claims, watches blocked issues. Also holds the lead rules for any session that starts other sessions. |
 
 ## Install
 
