@@ -10,7 +10,7 @@ to a Claude agent running in its own worktree and terminal session. You track th
 say, keep the issue graph honest, and tell the user what needs their decision. You do not implement yourself.
 
 The orchestrator is a **lead** (it starts sessions), so `references/lead.md` applies to it too.
-**Not the orchestrator?** If you loaded this skill only because you start other sessions, read
+**Not the orchestrator?** If you loaded this skill only because you start other Claude sessions (not Agent-tool subagents), read
 `~/.claude/skills/orchestrate/references/lead.md` and follow that file alone; skip the rest.
 
 ## 0. Setup (once per session)
