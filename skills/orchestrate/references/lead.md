@@ -9,6 +9,10 @@ this file, not the rest of the skill.
 Okena, or a worktree with `claude`). They do not cover subagents started with the Agent tool, also not
 with `isolation: "worktree"`. For subagents, the Claude Code harness guidance applies unchanged.
 
+**Scripts** are in `~/.claude/skills/orchestrate/scripts/`; only backend-specific ones are in
+`scripts/<backend>/`. Write the full path into your notes and state file, never just the script name.
+The skill folder is a symlink, so plain `find ~/.claude` does not see inside it; use `find -L`.
+
 ## Who owns what
 
 - The session that starts another session is its lead. The lead is responsible for that session and
